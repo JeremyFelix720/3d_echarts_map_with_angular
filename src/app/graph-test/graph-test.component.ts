@@ -40,7 +40,7 @@ export class GraphTestComponent /*implements OnInit*/ {
   title = 'echarts_playground';
   
 
-  chartOption: EChartsOption = {
+  chartOption: /*EChartsCoreOption*/ /*echarts.EChartsCoreOption*/ any  = {
 
     /*
     xAxis: {
@@ -60,56 +60,60 @@ export class GraphTestComponent /*implements OnInit*/ {
     
 
     tooltip: {},
-    backgroundColor: '#fff',
     visualMap: {
-      show: false,
-      dimension: 2,
-      min: -1,
       max: 1,
       inRange: {
-        color: [
-          '#313695',
-          '#4575b4',
-          '#74add1',
-          '#abd9e9',
-          '#e0f3f8',
-          '#ffffbf',
-          '#fee090',
-          '#fdae61',
-          '#f46d43',
-          '#d73027',
-          '#a50026'
-        ]
+        color: ['#d94e5d', '#eac736', '#50a3ba']
       }
     },
     xAxis3D: {
-      //data: [2, 3, 8, 9, 4],
-      type: 'value',
+      type: 'value'
     },
     yAxis3D: {
-      //data: [12, 6, 8, 3, 7],
-      type: 'value',
+      type: 'value'
     },
     zAxis3D: {
-      //data: [12, 6, 8, 3, 7],
-      type: 'value',      
+      type: 'value'
     },
     grid3D: {
       viewControl: {
-        // projection: 'orthographic'
+        projection: 'perspective'
       }
     },
-
-    /*
     series: [{
-      type: 'map',
+      type: 'surface', // Essayer toutes les combinaisons suivantes (dans les types de données acceptées par l'interface "RegisteredSeriesOption") : line, bar, scatter, pie, radar (yes), map, tree, treemap, graph (yes), gauge, funnel, parallel, sankey, boxplot, candlestick, effectScatter, lines, heatmap, pictorialBar, themeRiver, sunburst, custom
+      wireframe: {
+        // show: false
+      },
       symbolSize: 50,
-      data: [[-1, -1, -1], [0, 0, 0], [1, 1, 1]],
-      itemStyle: {
-          opacity: 1
+      /*
+      data: [
+        [-1, -1, -1], 
+        [0, 0, 0], 
+        [1, 1, 1]
+      ],
+      */
+     itemStyle: {
+       opacity: 1 // Gère la transparence du graph
+     },
+      equation: {
+        x: {
+          // data: [-1, 1, -1],
+          step: 0.05
+        },
+        y: {
+          //data: [-1, 1, -1],
+          step: 0.05
+        },
+        z: function (x:number, y:number) {
+            if (Math.abs(x) < 0.1 && Math.abs(y) < 0.1) {
+                return '-';
+            }
+            return Math.sin(x * Math.PI) * Math.sin(y * Math.PI);
+        }
       }
     }]
-    */
+      
 
     /*
     series: [
