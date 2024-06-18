@@ -8,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import 'echarts-gl';
 // import * as echarts from 'echarts';
 // import { graphic } from 'echarts';
+import data from './data.json';
 
 
 @Component({
@@ -22,6 +23,15 @@ import 'echarts-gl';
 })
 
 export class GraphTestComponent /*implements OnInit*/ {
+
+  constructor(){
+    /* extractCsvData((data:any[]) => {
+      this.measureDatas = data;
+      //console.log(data);
+      console.log(this.measureDatas);
+    }); */
+    console.log('data=', data);
+  }
 
   @NgModule({
     imports: [
@@ -42,6 +52,9 @@ export class GraphTestComponent /*implements OnInit*/ {
   measureDatas = [[[1, 0, 1], [0, 1, 0], [1, 0, 1]], [[1, 0, 1], [0, 1, 0], [1, 0, 1]]];
   profilIndex = 0;
   valueIndex = 0;
+
+
+
   
   chartOption: /*EChartsCoreOption*/ /*echarts.EChartsCoreOption*/ any  = {
     
@@ -62,6 +75,23 @@ export class GraphTestComponent /*implements OnInit*/ {
     ],
     */
    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
    
     tooltip: {},
     visualMap: {
@@ -101,6 +131,17 @@ export class GraphTestComponent /*implements OnInit*/ {
         [1, 1, 1]
       ],
       */
+
+      data: [{
+        
+        
+        // JE MET MON TABLEAU DATA LA-DEDANS ?
+        value: [1, 1, 1]
+
+
+        // 
+
+      }],
       
      itemStyle: {
        opacity: 1 // Gère la transparence du graph
@@ -114,8 +155,13 @@ export class GraphTestComponent /*implements OnInit*/ {
           max: 1,
           //data: [0.6, 0.2, -0.8],
           //index: -1,
+          
+          
 
-          // this.assignProfilValues("x")
+          function (){
+            //this.assignProfilValues("x")
+            
+          }
         },
         y: {
           //step: 0.05,
