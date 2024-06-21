@@ -1,19 +1,14 @@
-import { Component, NgModule, OnInit } from '@angular/core';
+import { Component, NgModule } from '@angular/core';
 import { NgxEchartsDirective, provideEcharts } from 'ngx-echarts';
 import { NgxEchartsModule } from 'ngx-echarts';
-// import { EChartsOption } from 'echarts';
 import { CommonModule } from '@angular/common';
-// import { ECharts } from 'echarts';
-// import { ECharts } from 'echarts/core';
 import 'echarts-gl';
-// import * as echarts from 'echarts';
-// import { graphic } from 'echarts';
 import data from './data.json';
 
 function generateDemoData() {
-  var demoData = [];
-  for (var i = 0; i <= 50; i++) {
-    for (var j = 50; j > 0; j--) {
+  let demoData = [];
+  for (let i = 0; i <= 50; i++) {
+    for (let j = 50; j > 0; j--) {
       demoData.push([i, j, i + j]);
     }
   }
@@ -23,8 +18,7 @@ function generateDemoData() {
 }
 
 function transformRealDataStructure(data:any[], minXValue:number, maxXValue:number) {
-
-  var dataTransformed:any[] = [];
+  let dataTransformed:any[] = [];
 
   data.forEach((profil:any, index:number) => { // je parcours mes tableaux de profils...
 
@@ -37,7 +31,6 @@ function transformRealDataStructure(data:any[], minXValue:number, maxXValue:numb
        }
       })
   });
-
   console.log("dataTransformed=");
   console.log(dataTransformed);
   return dataTransformed;
@@ -52,14 +45,10 @@ function findAxisMinOrMaxValue(data:any[], valueToFind:"min" | "max", axis: "x" 
 
         if(axis === "x"){
           axisValues.push(data[m][n][0]);
-          //console.log("data[m][n][0]=" + data[m][n][0])
-
         } else if(axis === "y"){
           axisValues.push(data[m][n][1]);
-          //console.log("data[m][n][1]=" + data[m][n][1])
         } else if(axis === "z"){
           axisValues.push(data[m][n][2]);
-          //console.log("data[m][n][2]=" + data[m][n][2])
         }
       }
     }
@@ -74,7 +63,6 @@ function findAxisMinOrMaxValue(data:any[], valueToFind:"min" | "max", axis: "x" 
       return Math.max(...axisValues);
     }
   }
-
 
 @Component({
   selector: 'app-graph-test',
@@ -107,7 +95,6 @@ export class GraphTestComponent /*implements OnInit*/ {
     console.log(data);
   }
 
-  
   // Copié-collé de : https://www.npmjs.com/package/ngx-echarts?activeTab=readme
   title = 'echarts_playground';
 
@@ -127,16 +114,20 @@ export class GraphTestComponent /*implements OnInit*/ {
   chartOption: /*EChartsCoreOption*/ /*echarts.EChartsCoreOption*/ any  = {
     
     visualMap: {
-      show: false,
+      show: true,
       dimension: 2,
       min: 2295, // valeur de z la plus faible
       max: 2315, // valeur de z la plus haute
       inRange: {
-        color: [
-          '#313695', // bleu
-          '#a50026', // rouge
-          '#ffffbf', // beige
-        ]
+        color: ['#440154', '#404387', '#29788E', '#22A784', '#79D151', '#FDE724']
+        /*
+        Thèmes enregistrés dans FlexCan :
+        Viridis : ['#440154', '#404387', '#29788E', '#22A784', '#79D151', '#FDE724']
+        Inferno : ['#000003', '#410967', '#932567', '#DC5039', '#FBA40A', '#FCFEA4']
+        Blue-red : ["#313695", "#4575b4", "#74add1", "#abd9e9", "#e0f3f8", "#ffffbf", "#fee090", "#fdae61", "#f46d43", "#d73027", "#a50026"]
+        Blue : ["#242870", "#313695", "#4575b4", "#74add1", "#abd9e9", "#d5eff6"]
+        Grey : ['#000000', '#333333', '#666666', '#999999', '#cccccc', '#ffffff']
+        */
       }
     },
 
@@ -172,8 +163,10 @@ export class GraphTestComponent /*implements OnInit*/ {
         lineStyle: { color: '#000' }
       },
       viewControl: {
-        // autoRotate: true
+        //autoRotate: true
       },
+      boxHeight: 50, // Hauteur de l'axe Z
+      boxWidth: data.length * 10, // Largeur de l'axe Y
       light: {
         main: {
           shadow: false,
@@ -185,13 +178,14 @@ export class GraphTestComponent /*implements OnInit*/ {
 
     series: [
       {
+        smooth: true,
+
         //type: 'scatter3D',
         //type: 'bar3D',
         type: 'surface',
 
-        
         wireframe: {
-          show: false
+          show: false // Permet d'afficher ou non le quadriage du graph 3d
         },
 
         //data: this.demoData,
