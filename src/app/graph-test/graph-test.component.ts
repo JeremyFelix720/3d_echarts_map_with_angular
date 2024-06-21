@@ -43,6 +43,38 @@ function transformRealDataStructure(data:any[], minXValue:number, maxXValue:numb
   return dataTransformed;
 }
 
+function findAxisMinOrMaxValue(data:any[], valueToFind:"min" | "max", axis: "x" | "y" | "z"):any {
+    let axisValues:number[] = [];
+
+    for (let m = 0; m < data.length; m++) { // pour chaque profil...
+
+      for (let n = 0; n < data.length; n++) { // pour chaque ensemble de valeurs x, y et z...
+
+        if(axis === "x"){
+          axisValues.push(data[m][n][0]);
+          //console.log("data[m][n][0]=" + data[m][n][0])
+
+        } else if(axis === "y"){
+          axisValues.push(data[m][n][1]);
+          //console.log("data[m][n][1]=" + data[m][n][1])
+        } else if(axis === "z"){
+          axisValues.push(data[m][n][2]);
+          //console.log("data[m][n][2]=" + data[m][n][2])
+        }
+      }
+    }
+
+    console.log(axisValues);
+
+    if(valueToFind === "min"){
+      console.log(`Valeur minimale de l'axe ${axis} : ${Math.min(...axisValues)}.`);
+      return Math.min(...axisValues);
+    } else if (valueToFind === "max") {
+      console.log(`Valeur maximale de l'axe ${axis} : ${Math.max(...axisValues)}.`);
+      return Math.max(...axisValues);
+    }
+  }
+
 
 @Component({
   selector: 'app-graph-test',
@@ -79,8 +111,14 @@ export class GraphTestComponent /*implements OnInit*/ {
   // Copié-collé de : https://www.npmjs.com/package/ngx-echarts?activeTab=readme
   title = 'echarts_playground';
 
-  minXValue = 25;
-  maxXValue = 2275;
+  minXValue = 50; // findAxisMinOrMaxValue(data, "min", "x");
+  maxXValue = 2275; // findAxisMinOrMaxValue(data, "max", "x");
+
+  minYValue = findAxisMinOrMaxValue(data, "min", "y");
+  maxYValue = findAxisMinOrMaxValue(data, "max", "y");
+
+  minZValue = findAxisMinOrMaxValue(data, "min", "z");
+  maxZValue = findAxisMinOrMaxValue(data, "max", "z");
 
   demoData = generateDemoData();
   realDataTransformed = transformRealDataStructure(data, this.minXValue, this.maxXValue);
@@ -91,44 +129,54 @@ export class GraphTestComponent /*implements OnInit*/ {
     visualMap: {
       show: false,
       dimension: 2,
-      //min: 0,
-      //max: 4,
+      min: 2295, // valeur de z la plus faible
+      max: 2315, // valeur de z la plus haute
       inRange: {
-          color: ['#313695', '#e0f3f8', '#f46d43']
+        color: [
+          '#313695', // bleu
+          '#a50026', // rouge
+          '#ffffbf', // beige
+        ]
       }
     },
 
     xAxis3D: {
+      name: "Largeur (milimètres)",
       type: 'value',
       min: this.minXValue, // Permet de déterminer à partir de quand commencer à afficher l'échelle des valeurs sur l'axe X
-      max: this.maxXValue // Permet de déterminer à partir de quand finir d'afficher l'échelle des valeurs sur l'axe X
+      max: this.maxXValue, // Permet de déterminer à partir de quand finir d'afficher l'échelle des valeurs sur l'axe X
+      interval: 200
     },
 
     yAxis3D: {
+      name: "Longueur (milisecondes)",
       type: 'value',
-      min: data[0][1],
-      max: data[data.length-1][1]
+      min: this.minYValue, //data[0][1],
+      max: this.maxYValue, //data[data.length-1][1]
+      interval: 100000
     },
 
     zAxis3D: {
+      name: "Épaisseur (micromètres)",
       type: 'value',
-      min: 2250,
-      max: 2350
+      min: this.minZValue+1800, //2100
+      max: this.maxZValue, //2500
+      interval: 50
     },
 
     grid3D: {
       axisLine: {
-        lineStyle: { color: '#fff' }
+        lineStyle: { color: '#000' }
       },
       axisPointer: {
-        lineStyle: { color: '#fff' }
+        lineStyle: { color: '#000' }
       },
       viewControl: {
         // autoRotate: true
       },
       light: {
         main: {
-          shadow: true,
+          shadow: false,
           quality: 'ultra',
           intensity: 1.5
         }
@@ -141,16 +189,15 @@ export class GraphTestComponent /*implements OnInit*/ {
         //type: 'bar3D',
         type: 'surface',
 
-        /*
+        
         wireframe: {
           show: false
         },
-        */
-        
+
         //data: this.demoData,
         data: this.realDataTransformed,
 
-        shading: 'lambert',
+        shading: "lambert",  //"color",
         label: {
           formatter: function (param:any) {
             return param.value[2].toFixed(1);
