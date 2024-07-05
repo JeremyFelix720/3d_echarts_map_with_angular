@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import 'echarts-gl';
 import data from './data.json';
 
+/*
 function generateDemoData() {
   let demoData = [];
   for (let i = 0; i <= 50; i++) {
@@ -16,25 +17,25 @@ function generateDemoData() {
   console.log(demoData);
   return demoData;
 }
+*/
 
-function transformRealDataStructure(data:any[], minXValue:number, maxXValue:number) {
+
+function transformRealDataStructure(data:any[], minXValue?:number, maxXValue?:number):any {
   let dataTransformed:any[] = [];
 
   data.forEach((profil:any, index:number) => { // je parcours mes tableaux de profils...
 
-      console.log("profil "+index+" =");
-      console.log(profil);
-
       profil.forEach((points:any) => { // je parcours mes tableaux de points (x, y et z)...
-       if((points[0] > minXValue) && (points[0] < maxXValue)){ // Cette condition permet d'enlever les rebords latéraux du graph 3d
+       //if((points[0] > minXValue) && (points[0] < maxXValue)){ // Cette condition permet d'enlever les rebords latéraux du graph 3d
           dataTransformed.push(points);
-       }
+      // }
       })
   });
   console.log("dataTransformed=");
   console.log(dataTransformed);
   return dataTransformed;
 }
+
 
 function findAxisMinOrMaxValue(data:any[], valueToFind:"min" | "max", axis: "x" | "y" | "z"):any {
     let axisValues:number[] = [];
@@ -64,6 +65,114 @@ function findAxisMinOrMaxValue(data:any[], valueToFind:"min" | "max", axis: "x" 
     }
   }
 
+  /*
+  function updatingDisplayedProfiles(actualProfilesValues:any[]){
+    console.log("actualProfilesValues=");
+    console.log(actualProfilesValues); // repete en boucle le même tableau contenant 2302 tableaux de valeurs x, y, z (faisant partie du même profil)
+    
+    return actualProfilesValues;
+  }
+  */
+
+  function findTimestampGapAverage():any {
+      //let timestampProfilGap = data[actualProfileIndex][0][1] - data[actualProfileIndex-1][0][1];
+      //console.log("timestampProfilGap=", timestampProfilGap);
+
+      let timestampTotalGapAverage = 0;
+      let timestampGapAverage = 0;
+
+      for (let i = 1; i < data.length-1; i++) {
+        timestampTotalGapAverage += (data[i][0][1]-data[i-1][0][1]);
+        console.log("timestampTotalGapAverage=", timestampTotalGapAverage);
+      }
+
+      timestampGapAverage = Math.ceil(timestampTotalGapAverage/data.length);
+      console.log("timestampGapAverage=", timestampGapAverage);
+
+
+      //l'écart entre le profil 1 et 0 est : 26000
+      //moyenne globale obtenue pour les 27 profils = 24286
+
+      return timestampGapAverage;
+  }
+
+  function selectProfiles(data:any[], displayedProfiles:any[], displayedProfilesValues:any[], actualProfileIndex:number, numberOfDisplayedProfiles:number, timestampGapAverage:any):any {
+    console.log("Je rentre dans la fonction addProfilesToTheGraph");
+
+    console.log("timestampGapAverage=", timestampGapAverage);
+
+    let actualProfiles:any[] = displayedProfiles // profils non-décortiqués
+    let actualProfilesValues:any[] = displayedProfilesValues; // contiendra l'ensemble des points de tous les profils parcourrus au fur et à mesure.
+    // L'index "actualProfileIndex" change à chaque entrée dans la fonction pour que "actualProfilesValues" change aussi
+
+
+    /*
+    MEMOS :
+    
+    1) Alimenter le tableau tridimentionnel "actualProfiles" en ajoutant chaque profil en fonction de l'index qui augmente progressivement
+
+    2) Juste avant la fin de cette fonction, actualiser "actualProfilesValues" en appelant la fonction "TransformData" et lui passer "actualProfiles" en argument pour qu'il devienne un tableau bi-dimentionnel
+
+    3) Retourner "actualProfilesValues" pour que soit cet ensemble de tableaux de valeurs [x, y, z] qui soit récupéré par eCharts.
+    */
+
+
+    // QUAND MON TABLEAU A ETE ENTIEREMENT PARCOURRU :
+    if(actualProfileIndex+1 >= data.length){
+
+      console.log("Tableau entièrement parcourru !");
+
+      actualProfileIndex = 0; // je reviens au début du tableau "data" pour le parcourir.
+
+
+      actualProfiles.shift(); // J'enlève le premier profil du tableau "actualProfiles".
+      actualProfiles.push(data[actualProfileIndex]); // Je rajoute l'élément suivant du tableau data à la fin du tableau "actualProfiles".
+
+      // GESTION DU TIMESTAMP DU NOUVEAU PROFIL APRES L'AVOIR RAJOUTE DANS "actualProfiles" :
+      for (let i = 0; i < actualProfiles.length; i++) {
+        if(i === actualProfiles.length-1){
+          actualProfiles[actualProfiles.length-1][1] += timestampGapAverage;
+        }
+      }
+
+    } else {
+
+      console.log("profil "+actualProfileIndex+" =", data[actualProfileIndex]);
+      // Profil 0 = 0: Array(3) [ 0, 1718632711000, 996.8 ]
+      // Profil 1 = 0: Array(3) [ 0, 1718632737000, 998.3 ]
+      // Profil 2 = 0: Array(3) [ 0, 1718632763000, 996.1 ]
+
+      console.log("displayedProfiles = ", displayedProfiles);
+
+      // de 0 à 10...
+      //for (let i = actualProfileIndex; i < actualProfileIndex + numberOfDisplayedProfiles; i++) { // je parcours mes tableaux de profils...
+    
+        if(actualProfileIndex+1 !== numberOfDisplayedProfiles){
+
+          actualProfiles.shift(); // J'enlève le premier profil du tableau "actualProfiles".
+          actualProfiles.push(data[actualProfileIndex]); // Je rajoute l'élément suivant du tableau data à la fin du tableau "actualProfiles".
+
+        } else { // QUAND LE NOMBRE MAXIMUM DE PROFILS AFFICHES A ETE ATTEINT :
+          console.log("Nombre de profils affichables en même temps entièrement atteint");  // çà marche
+      
+          let firstProfile = actualProfiles.shift(); // j'enlève le premier profil du tableau.
+          actualProfiles.push(firstProfile); // je rajoute le premier profil à la fin du tableau "actualProfiles".
+          // Timestamp du profil 0 (foreach n°1) : 1718632737000
+          // Timestamp du profil 1 (foreach n°2) : 1718632763000
+
+        }
+    
+    }
+    
+
+    // PROBLEME : mon tableau de profils ne contient qu'un seul profil (avec seulement des tableaux de valeurs dedans !) à chaque lancement de la fonction "transformRealDataStructure" et c'est toujours le même profil !
+    actualProfilesValues = transformRealDataStructure(actualProfiles); // j'actualise "actualProfilesValues" pour lui ajouter les tableaux de valeurs x, y, z du nouveau profil
+
+    console.log("j'arrive au bout de la fonction selectProfiles !");
+
+    return [actualProfiles, actualProfilesValues, actualProfileIndex];
+  }
+
 @Component({
   selector: 'app-graph-test',
   standalone: true,
@@ -76,6 +185,10 @@ function findAxisMinOrMaxValue(data:any[], valueToFind:"min" | "max", axis: "x" 
 })
 
 export class GraphTestComponent /*implements OnInit*/ {
+
+  constructor(){
+    this.actualProfileIndex = 0;
+  }
 
   @NgModule({
     imports: [
@@ -106,9 +219,30 @@ export class GraphTestComponent /*implements OnInit*/ {
 
   minZValue = findAxisMinOrMaxValue(data, "min", "z");
   maxZValue = findAxisMinOrMaxValue(data, "max", "z");
+  
+  // demoData = generateDemoData();
+  // realDataTransformed = transformRealDataStructure(data, this.minXValue, this.maxXValue);
 
-  demoData = generateDemoData();
-  realDataTransformed = transformRealDataStructure(data, this.minXValue, this.maxXValue);
+
+  numberOfPointsValuesPerProfile = data[0].length;
+  numberOfDisplayedProfiles = 10; // Nombre maxi de profils affichés sur le graph
+  //totalProfiles = data.length;
+  delayBetweenEachAddedProfile = 5000; // en milisecondes
+
+  timestampGapAverage = findTimestampGapAverage();
+  
+  selectProfilesResult = selectProfiles(data, [], [], 0, this.numberOfDisplayedProfiles, this.timestampGapAverage);
+  displayedProfiles = this.selectProfilesResult[0];
+  displayedProfilesValues = this.selectProfilesResult[1];
+  actualProfileIndex = this.selectProfilesResult[2];
+  
+  interval = setInterval(() => {
+    console.log("setInterval !");
+    this.actualProfileIndex++;
+    this.displayedProfilesValues.push(data[this.actualProfileIndex]);
+
+    selectProfiles(data, this.displayedProfiles, this.displayedProfilesValues, this.actualProfileIndex, this.numberOfDisplayedProfiles, this.timestampGapAverage);
+  }, this.delayBetweenEachAddedProfile);
 
 
   chartOption: /*EChartsCoreOption*/ /*echarts.EChartsCoreOption*/ any  = {
@@ -189,7 +323,8 @@ export class GraphTestComponent /*implements OnInit*/ {
         },
 
         //data: this.demoData,
-        data: this.realDataTransformed,
+        //data: this.realDataTransformed,  // CETTE LIGNE PERMET D'AFFICHER TOUS LES PROFILS D'UN COUP ET DE FACON STATIQUE
+        data: this.displayedProfilesValues,
 
         shading: "lambert",  //"color",
         label: {
